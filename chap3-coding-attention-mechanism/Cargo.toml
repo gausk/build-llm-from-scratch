@@ -1,0 +1,8 @@
+[package]
+name = "chap3-coding-attention-mechanism"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+candle-core = { workspace = true }
+candle-nn = { workspace = true }
