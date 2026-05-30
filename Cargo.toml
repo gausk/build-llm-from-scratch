@@ -1,0 +1,6 @@
+[workspace]
+members = ["chap2-working-with-text-data"]
+
+[workspace.dependencies]
+tokenizers =  {  version = "0",  features = ["http"]}
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
