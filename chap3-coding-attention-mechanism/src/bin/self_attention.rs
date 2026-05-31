@@ -53,7 +53,7 @@ fn main() -> Result<()> {
         &device,
     )?;
     println!("Input: {:?}\n", input.to_vec2::<f32>()?);
-    let attention = SelfAttention::new(input.dim(1)?, 2, &device)?;
+    let attention = SelfAttention::new(input.dim(D::Minus1)?, 2, &device)?;
     let output = attention.forward(&input)?;
     println!("Output: {:.4?}", output.to_vec2::<f32>()?);
     Ok(())

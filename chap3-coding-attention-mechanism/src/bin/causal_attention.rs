@@ -78,7 +78,10 @@ impl CasualAttention {
         );
 
         let attn_weights = softmax(&attention_scores, D::Minus1)?;
-        println!("Attention weights before dropout: {:.4?}\n", attn_weights.to_vec3::<f32>()?);
+        println!(
+            "Attention weights before dropout: {:.4?}\n",
+            attn_weights.to_vec3::<f32>()?
+        );
         let attn_weights = self.dropout.forward(&attn_weights, true)?;
         println!(
             "Attention weights: {:.4?}\n",
@@ -104,7 +107,7 @@ fn main() -> Result<()> {
         &device,
     )?;
     println!("Input: {:#?}\n", input.to_vec2::<f32>()?);
-    let attention = CasualAttention::new(input.dim(1)?, 2, device, 0.5)?;
+    let attention = CasualAttention::new(input.dim(D::Minus1)?, 2, device, 0.5)?;
     let output = attention.forward(&input)?;
     println!("Output: {:#.4?}", output.to_vec2::<f32>()?);
 
