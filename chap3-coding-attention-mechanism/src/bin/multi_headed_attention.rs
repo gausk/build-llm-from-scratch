@@ -1,7 +1,7 @@
-use std::time::Instant;
 use candle_core::{D, DType, Device, Result, Tensor};
 use candle_nn::Dropout;
 use candle_nn::ops::softmax;
+use std::time::Instant;
 
 struct MultiHeadAttention {
     wquery: Tensor,
@@ -84,13 +84,18 @@ impl MultiHeadAttention {
     }
 }
 
-
 fn gpt2(context_length: usize, device: Device) -> Result<()> {
     let embedding_size = 768;
     let attention_heads = 12;
     let input = Tensor::rand(0f32, 1f32, (context_length, embedding_size), &device)?;
     let inputs = Tensor::stack(&[input.clone(), input], 0)?;
-    let attention = MultiHeadAttention::new(inputs.dim(D::Minus1)?, embedding_size, attention_heads, device, 0.1)?;
+    let attention = MultiHeadAttention::new(
+        inputs.dim(D::Minus1)?,
+        embedding_size,
+        attention_heads,
+        device,
+        0.1,
+    )?;
     let output = attention.forward_batch(&inputs)?;
     println!("Output shape: {:?}", output.shape());
     Ok(())
