@@ -25,9 +25,9 @@ jobs:
     - name: Run Binaries
       run: |
         for bin in $(cargo metadata --no-deps --format-version 1 \
-            | jq -r '.packages[].targets[] \
-            | select(.kind[] == "bin") \
-            | .name'); do \
-          echo "Running $bin" \
-          cargo run --bin "$bin" \
+            | jq -r '.packages[].targets[]
+            | select(.kind[] == "bin")
+            | .name'); do
+          echo "Running $bin"
+          cargo run --bin "$bin"
         done

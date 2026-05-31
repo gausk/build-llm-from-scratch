@@ -47,7 +47,7 @@ impl CasualAttention {
         );
 
         let attn_weights = softmax(&attention_scores, D::Minus1)?;
-        let attn_weights = self.dropout.forward(&attn_weights, false)?;
+        let attn_weights = self.dropout.forward(&attn_weights, true)?;
         println!(
             "Attention weights: {:.4?}\n",
             attn_weights.to_vec2::<f32>()?
@@ -78,7 +78,8 @@ impl CasualAttention {
         );
 
         let attn_weights = softmax(&attention_scores, D::Minus1)?;
-        let attn_weights = self.dropout.forward(&attn_weights, false)?;
+        println!("Attention weights before dropout: {:.4?}\n", attn_weights.to_vec3::<f32>()?);
+        let attn_weights = self.dropout.forward(&attn_weights, true)?;
         println!(
             "Attention weights: {:.4?}\n",
             attn_weights.to_vec3::<f32>()?
