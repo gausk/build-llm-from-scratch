@@ -2,7 +2,7 @@
 members = ["chap2-working-with-text-data", "chap3-coding-attention-mechanism"]
 
 [workspace.dependencies]
-candle-core = { version = "0.10.2" }
+candle-core = { version = "0.10.2", features = ["metal"] }
 candle-nn = { version = "0.10.2" }
 criterion = "0.8.2"
 tokenizers = { version = "0", features = ["http"] }
