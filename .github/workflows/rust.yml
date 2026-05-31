@@ -23,7 +23,8 @@ jobs:
     - name: Run bench
       run: cargo bench
     - name: Run Binaries
-      run: for bin in $(cargo metadata --no-deps --format-version 1 \
+      run: |
+        for bin in $(cargo metadata --no-deps --format-version 1 \
             | jq -r '.packages[].targets[] \
             | select(.kind[] == "bin") \
             | .name'); do \
