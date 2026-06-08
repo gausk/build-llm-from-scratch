@@ -259,6 +259,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "chap4-implement-a-gpt-model"
+version = "0.1.0"
+dependencies = [
+ "candle-core",
+ "candle-nn",
+]
+
+[[package]]
 name = "ciborium"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
