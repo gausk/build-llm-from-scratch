@@ -1,6 +1,10 @@
 [workspace]
 resolver = "3"
-members = ["chap2-working-with-text-data", "chap3-coding-attention-mechanism", "chap4-implement-a-gpt-model"]
+members = [
+    "chap2-working-with-text-data",
+    "chap3-coding-attention-mechanism",
+    "chap4-implement-a-gpt-model",
+]
 
 [workspace.dependencies]
 candle-core = { version = "0.10.2", features = ["metal"] }
