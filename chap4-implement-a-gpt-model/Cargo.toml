@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 candle-core = { workspace = true }
 candle-nn = { workspace = true }
+chap3-coding-attention-mechanism = { workspace = true }

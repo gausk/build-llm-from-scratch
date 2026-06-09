@@ -1,14 +1,18 @@
+use crate::config::GPTConfig;
 use crate::feedforward::FeedForward;
 use crate::gelu::Gelu;
 use crate::normalization::LayerNorm;
 use crate::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
+use crate::transformer::TransformerBlock;
 use candle_core::{D, DType, Device, Result, Tensor};
 use candle_nn::{VarBuilder, VarMap};
 
+mod config;
 pub mod feedforward;
 pub mod gelu;
 pub mod normalization;
 pub mod shortcut;
+mod transformer;
 
 fn main() -> Result<()> {
     let device = Device::Cpu;
@@ -59,6 +63,13 @@ fn main() -> Result<()> {
     println!("\nGradient with shortcut\n");
     print_gradients(model, Tensor::new(&[[1f32, 0.0, -1.0]], &device)?, varmap)?;
 
+    println!("\nTesting Transformer block\n");
+    let transformer = TransformerBlock::init(GPTConfig::gpt2(), device.clone())?;
+    let input = Tensor::rand(0f32, 1f32, (2, 4, 768), &device)?;
+    println!("Input shape: {:?}\n", input.shape());
+
+    let output = transformer.forward(input).unwrap();
+    println!("Output shape: {:?}\n", output.shape());
 
     Ok(())
 }

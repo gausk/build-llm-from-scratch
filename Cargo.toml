@@ -9,6 +9,7 @@ members = [
 [workspace.dependencies]
 candle-core = { version = "0.10.2", features = ["metal"] }
 candle-nn = { version = "0.10.2" }
+chap3-coding-attention-mechanism = { path = "chap3-coding-attention-mechanism" }
 criterion = "0.8.2"
 tokenizers = { version = "0", features = ["http"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
