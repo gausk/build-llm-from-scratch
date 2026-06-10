@@ -1,6 +1,6 @@
 use crate::gelu::Gelu;
-use candle_core::{DType, Device, Module, Result, Tensor};
-use candle_nn::{Linear, VarBuilder, VarMap, linear};
+use candle_core::{Module, Result, Tensor};
+use candle_nn::{Linear, VarBuilder, linear};
 
 pub struct FeedForward {
     l1: Linear,
@@ -9,19 +9,10 @@ pub struct FeedForward {
 }
 
 impl FeedForward {
-    pub fn init(emb_dim: usize, device: &Device) -> Result<FeedForward> {
-        let varmap = VarMap::new();
-        let l1 = linear(
-            emb_dim,
-            4 * emb_dim,
-            VarBuilder::from_varmap(&varmap, DType::F32, device).pp("l1"),
-        )?;
+    pub fn init(emb_dim: usize, var_builder: VarBuilder) -> Result<FeedForward> {
+        let l1 = linear(emb_dim, 4 * emb_dim, var_builder.pp("l1"))?;
         let gelu = Gelu::init();
-        let l2 = linear(
-            4 * emb_dim,
-            emb_dim,
-            VarBuilder::from_varmap(&varmap, DType::F32, device).pp("l2"),
-        )?;
+        let l2 = linear(4 * emb_dim, emb_dim, var_builder.pp("l2"))?;
         Ok(Self { l1, gelu, l2 })
     }
 
@@ -30,5 +21,12 @@ impl FeedForward {
         let gelu_output = self.gelu.forward(l1_output)?;
         let l2_output = self.l2.forward(&gelu_output)?;
         Ok(l2_output)
+    }
+
+    pub fn parameters(&self) -> usize {
+        self.l1.weight().elem_count()
+            + self.l2.weight().elem_count()
+            + self.l1.bias().map_or(0, |t| t.elem_count())
+            + self.l2.bias().map_or(0, |t| t.elem_count())
     }
 }

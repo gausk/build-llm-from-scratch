@@ -1,11 +1,12 @@
-use candle_core::{D, DType, Device, Result, Tensor};
-use candle_nn::Dropout;
+use candle_core::{D, DType, Device, Module, Result, Tensor};
 use candle_nn::ops::softmax;
+use candle_nn::{Dropout, Linear, VarBuilder, linear_b};
 
 pub struct MultiHeadAttention {
-    wquery: Tensor,
-    wkey: Tensor,
-    wvalue: Tensor,
+    wquery: Linear,
+    wkey: Linear,
+    wvalue: Linear,
+    out_proj: Linear,
 
     num_heads: usize,
     head_dims: usize,
@@ -22,16 +23,20 @@ impl MultiHeadAttention {
         num_heads: usize,
         device: Device,
         dropout: f32,
+        qkv_bias: bool,
+        var_builder: VarBuilder,
     ) -> Result<Self> {
         assert_eq!(dim_out % num_heads, 0);
         let head_dims = dim_out / num_heads;
-        let wquery = Tensor::rand(0f32, 1f32, (dim_in, dim_out), &device)?;
-        let wkey = Tensor::rand(0f32, 1f32, (dim_in, dim_out), &device)?;
-        let wvalue = Tensor::rand(0f32, 1f32, (dim_in, dim_out), &device)?;
+        let wquery = linear_b(dim_in, dim_out, qkv_bias, var_builder.pp("wquery"))?;
+        let wkey = linear_b(dim_in, dim_out, qkv_bias, var_builder.pp("wkey"))?;
+        let wvalue = linear_b(dim_in, dim_out, qkv_bias, var_builder.pp("wvalue"))?;
+        let out_proj = linear_b(dim_out, dim_out, qkv_bias, var_builder.pp("out_proj"))?;
         Ok(Self {
             wquery,
             wkey,
             wvalue,
+            out_proj,
             head_dims,
             dim_out,
             num_heads,
@@ -44,9 +49,9 @@ impl MultiHeadAttention {
         let (batch_size, seq_len, _) = input.shape().dims3()?;
 
         // // (B,T,d_in) @ (d_in,d_out) -> (B,T,d_out)
-        let queries = input.broadcast_matmul(&self.wquery)?;
-        let keys = input.broadcast_matmul(&self.wkey)?;
-        let values = input.broadcast_matmul(&self.wvalue)?;
+        let queries = self.wquery.forward(input)?;
+        let keys = self.wkey.forward(input)?;
+        let values = self.wvalue.forward(input)?;
 
         // Split into heads: (B, T, d_out) -> (B, T, H, HD)
         let queries = queries.reshape((batch_size, seq_len, self.num_heads, self.head_dims))?;
@@ -79,6 +84,16 @@ impl MultiHeadAttention {
 
         // (B,T,H,HD) -> (B,T,d_out)
         let context = context.reshape((batch_size, seq_len, self.dim_out))?;
-        Ok(context)
+        let context_vec = self.out_proj.forward(&context)?;
+        Ok(context_vec)
+    }
+
+    pub fn parameters(&self) -> usize {
+        [&self.wquery, &self.wkey, &self.wvalue, &self.out_proj]
+            .into_iter()
+            .map(|linear| {
+                linear.weight().elem_count() + linear.bias().map_or(0, |b| b.elem_count())
+            })
+            .sum()
     }
 }

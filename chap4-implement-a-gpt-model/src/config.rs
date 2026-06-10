@@ -1,4 +1,5 @@
 #[allow(unused)]
+#[derive(Debug, Clone, Copy)]
 pub struct GPTConfig {
     pub vocab_size: usize,
     pub context_length: usize,

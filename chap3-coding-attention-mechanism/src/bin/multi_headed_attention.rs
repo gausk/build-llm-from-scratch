@@ -1,4 +1,5 @@
-use candle_core::{D, Device, Result, Tensor};
+use candle_core::{D, DType, Device, Result, Tensor};
+use candle_nn::{VarBuilder, VarMap};
 use chap3_coding_attention_mechanism::multi_headed_attention::MultiHeadAttention;
 use std::time::Instant;
 
@@ -7,12 +8,16 @@ fn gpt2(context_length: usize, device: Device) -> Result<()> {
     let attention_heads = 12;
     let input = Tensor::rand(0f32, 1f32, (context_length, embedding_size), &device)?;
     let inputs = Tensor::stack(&[input.clone(), input], 0)?;
+    let var_map = VarMap::new();
+    let var_builder = VarBuilder::from_varmap(&var_map, DType::F32, &device).pp("mha");
     let attention = MultiHeadAttention::new(
         inputs.dim(D::Minus1)?,
         embedding_size,
         attention_heads,
         device,
         0.1,
+        false,
+        var_builder,
     )?;
     let output = attention.forward_batch(&inputs)?;
     println!("Output shape: {:?}", output.shape());
@@ -35,7 +40,17 @@ fn main() -> Result<()> {
 
     let input = Tensor::stack(&[input.clone(), input], 0)?;
     println!("Batch Input: {:#.4?}", input.to_vec3::<f32>()?);
-    let attention = MultiHeadAttention::new(input.dim(D::Minus1)?, 4, 2, device.clone(), 0.5)?;
+    let var_map = VarMap::new();
+    let var_builder = VarBuilder::from_varmap(&var_map, DType::F32, &device).pp("mha");
+    let attention = MultiHeadAttention::new(
+        input.dim(D::Minus1)?,
+        4,
+        2,
+        device.clone(),
+        0.5,
+        false,
+        var_builder,
+    )?;
     let output = attention.forward_batch(&input)?;
     println!("Batch Output: {:#.4?}", output.to_vec3::<f32>()?);
 

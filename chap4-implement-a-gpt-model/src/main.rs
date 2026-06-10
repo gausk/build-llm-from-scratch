@@ -1,18 +1,20 @@
 use crate::config::GPTConfig;
 use crate::feedforward::FeedForward;
 use crate::gelu::Gelu;
+use crate::gpt_model::GptModel;
 use crate::normalization::LayerNorm;
 use crate::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
 use crate::transformer::TransformerBlock;
 use candle_core::{D, DType, Device, Result, Tensor};
 use candle_nn::{VarBuilder, VarMap};
 
-mod config;
+pub mod config;
 pub mod feedforward;
 pub mod gelu;
+pub mod gpt_model;
 pub mod normalization;
 pub mod shortcut;
-mod transformer;
+pub mod transformer;
 
 fn main() -> Result<()> {
     let device = Device::Cpu;
@@ -44,32 +46,51 @@ fn main() -> Result<()> {
 
     let input = Tensor::rand(0f32, 1f32, (2, 3, 768), &device)?;
     println!("Input shape: {:?}\n", input.shape());
-    let ffn = FeedForward::init(768, &device)?;
+    let var_map = VarMap::new();
+    let var_builder = VarBuilder::from_varmap(&var_map, DType::F32, &device).pp("ff");
+    let ffn = FeedForward::init(768, var_builder)?;
     let output = ffn.forward(input)?;
     println!("Output shape: {:?}\n", output.shape());
 
     let layer_sizes = vec![3, 3, 3, 3, 3, 1];
-    let varmap = VarMap::new();
-    let var_builder = VarBuilder::from_varmap(&varmap, DType::F32, &device);
-    let model = ExampleDeepNeuralNetwork::init(layer_sizes.clone(), false, &var_builder)?;
+    let var_map = VarMap::new();
+    let model = ExampleDeepNeuralNetwork::init(layer_sizes.clone(), false, &var_map, &device)?;
 
     println!("\nGradient without shortcut\n");
-    print_gradients(model, Tensor::new(&[[1f32, 0.0, -1.0]], &device)?, varmap)?;
+    print_gradients(model, Tensor::new(&[[1f32, 0.0, -1.0]], &device)?, &var_map)?;
 
-    let varmap = VarMap::new();
-    let var_builder = VarBuilder::from_varmap(&varmap, DType::F32, &device);
-    let model = ExampleDeepNeuralNetwork::init(layer_sizes, true, &var_builder)?;
+    let var_map = VarMap::new();
+    let model = ExampleDeepNeuralNetwork::init(layer_sizes, true, &var_map, &device)?;
 
     println!("\nGradient with shortcut\n");
-    print_gradients(model, Tensor::new(&[[1f32, 0.0, -1.0]], &device)?, varmap)?;
+    print_gradients(model, Tensor::new(&[[1f32, 0.0, -1.0]], &device)?, &var_map)?;
 
     println!("\nTesting Transformer block\n");
-    let transformer = TransformerBlock::init(GPTConfig::gpt2(), device.clone())?;
+    let var_map = VarMap::new();
+    let var_builder = VarBuilder::from_varmap(&var_map, DType::F32, &device).pp("transformer");
+    let transformer = TransformerBlock::init(GPTConfig::gpt2(), device.clone(), var_builder)?;
     let input = Tensor::rand(0f32, 1f32, (2, 4, 768), &device)?;
     println!("Input shape: {:?}\n", input.shape());
 
-    let output = transformer.forward(input).unwrap();
+    let output = transformer.forward(input)?;
     println!("Output shape: {:?}\n", output.shape());
+
+    println!("\nTesting GPTModel\n");
+    let input = Tensor::new(
+        &[[6109u32, 3626, 6100, 345], [6109, 1110, 6622, 257]],
+        &device,
+    )?;
+    println!("Input shape: {:?}\n", input.shape());
+    println!("Input data: {:?}\n", input.to_vec2::<u32>()?);
+
+    let var_map = VarMap::new();
+    let gpt_model = GptModel::init(GPTConfig::gpt2(), device, var_map)?;
+    let output = gpt_model.forward(input)?;
+    println!("Output shape: {:?}\n", output.shape());
+    let parameters = gpt_model.parameters();
+    let total_size_bytes = parameters * 4; // f32 -> 4 byte
+    let total_size_mb = total_size_bytes / (1024 * 1024);
+    println!("Total size of parameters: {:.4} MB\n", total_size_mb);
 
     Ok(())
 }

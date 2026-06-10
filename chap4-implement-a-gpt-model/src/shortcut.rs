@@ -1,5 +1,5 @@
 use crate::gelu::Gelu;
-use candle_core::{Module, Result, Tensor};
+use candle_core::{DType, Device, Module, Result, Tensor};
 use candle_nn::loss::mse;
 use candle_nn::{Linear, VarBuilder, VarMap, linear};
 
@@ -29,13 +29,18 @@ pub struct ExampleDeepNeuralNetwork {
 }
 
 impl ExampleDeepNeuralNetwork {
-    pub fn init(layer_sizes: Vec<usize>, use_shortcut: bool, vb: &VarBuilder) -> Result<Self> {
+    pub fn init(
+        layer_sizes: Vec<usize>,
+        use_shortcut: bool,
+        var_map: &VarMap,
+        device: &Device,
+    ) -> Result<Self> {
         let mut layers = Vec::new();
         for (idx, pair) in layer_sizes.windows(2).enumerate() {
             layers.push(LinearGelu::new(
                 pair[0],
                 pair[1],
-                &vb.pp(format!("layer_{idx}")),
+                &VarBuilder::from_varmap(var_map, DType::F32, device).pp(format!("layer_{idx}")),
             )?);
         }
         Ok(Self {
@@ -58,7 +63,7 @@ impl ExampleDeepNeuralNetwork {
     }
 }
 
-pub fn print_gradients(model: ExampleDeepNeuralNetwork, x: Tensor, varmap: VarMap) -> Result<()> {
+pub fn print_gradients(model: ExampleDeepNeuralNetwork, x: Tensor, varmap: &VarMap) -> Result<()> {
     let output = model.forward(x)?;
     let target = Tensor::zeros_like(&output)?;
     let loss = mse(&output, &target)?;

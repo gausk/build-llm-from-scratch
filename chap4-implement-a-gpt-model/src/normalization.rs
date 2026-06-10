@@ -30,4 +30,8 @@ impl LayerNorm {
             .broadcast_mul(&self.scale)?
             .broadcast_add(&self.shift)
     }
+
+    pub fn parameters(&self) -> usize {
+        self.scale.elem_count() + self.shift.elem_count()
+    }
 }
