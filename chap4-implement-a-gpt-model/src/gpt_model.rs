@@ -80,10 +80,9 @@ impl GptModel {
 
         let total = token_emb + pos_emb + transformer_blocks + final_norm + out_weight + out_bias;
 
-        println!("\nTotal parameters      : {total:>12}");
+        println!("\nTotal parameters       : {total:>12}");
         let total_wty = total - out_weight - out_bias;
         println!("\nTotal parameters considering weight tying  : {total_wty}\n");
-
-        total_wty
+        total
     }
 }

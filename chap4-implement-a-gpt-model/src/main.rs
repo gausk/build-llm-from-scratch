@@ -7,6 +7,7 @@ use crate::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
 use crate::transformer::TransformerBlock;
 use candle_core::{D, DType, Device, Result, Tensor};
 use candle_nn::{VarBuilder, VarMap};
+use std::time::Instant;
 
 pub mod config;
 pub mod feedforward;
@@ -85,12 +86,13 @@ fn main() -> Result<()> {
 
     let var_map = VarMap::new();
     let gpt_model = GptModel::init(GPTConfig::gpt2(), device, var_map)?;
+    let current = Instant::now();
     let output = gpt_model.forward(input)?;
     println!("Output shape: {:?}\n", output.shape());
     let parameters = gpt_model.parameters();
     let total_size_bytes = parameters * 4; // f32 -> 4 byte
     let total_size_mb = total_size_bytes / (1024 * 1024);
     println!("Total size of parameters: {:.4} MB\n", total_size_mb);
-
+    println!("Total time taken: {:?}", current.elapsed());
     Ok(())
 }
