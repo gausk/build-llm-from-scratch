@@ -1,6 +1,7 @@
 use crate::config::GPTConfig;
 use crate::feedforward::FeedForward;
 use crate::gelu::Gelu;
+use crate::generate::generate_text_simple;
 use crate::gpt_model::GptModel;
 use crate::normalization::LayerNorm;
 use crate::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
@@ -8,10 +9,12 @@ use crate::transformer::TransformerBlock;
 use candle_core::{D, DType, Device, Result, Tensor};
 use candle_nn::{VarBuilder, VarMap};
 use std::time::Instant;
+use tokenizers::Tokenizer;
 
 pub mod config;
 pub mod feedforward;
 pub mod gelu;
+pub mod generate;
 pub mod gpt_model;
 pub mod normalization;
 pub mod shortcut;
@@ -85,7 +88,8 @@ fn main() -> Result<()> {
     println!("Input data: {:?}\n", input.to_vec2::<u32>()?);
 
     let var_map = VarMap::new();
-    let gpt_model = GptModel::init(GPTConfig::gpt2(), device, var_map)?;
+    let config = GPTConfig::gpt2();
+    let gpt_model = GptModel::init(config, device.clone(), var_map)?;
     let current = Instant::now();
     let output = gpt_model.forward(input)?;
     println!("Output shape: {:?}\n", output.shape());
@@ -93,6 +97,21 @@ fn main() -> Result<()> {
     let total_size_bytes = parameters * 4; // f32 -> 4 byte
     let total_size_mb = total_size_bytes / (1024 * 1024);
     println!("Total size of parameters: {:.4} MB\n", total_size_mb);
-    println!("Total time taken: {:?}", current.elapsed());
+    println!("Total time taken to test GptModel: {:?}", current.elapsed());
+
+    let tokenizer = Tokenizer::from_pretrained("gpt2", None).unwrap();
+    let input = "Hello, I am";
+    let encoded = tokenizer.encode(input, false).unwrap();
+    println!("Input encoded: {:?}", encoded.get_ids());
+
+    let it = Tensor::new(encoded.get_ids(), &device)?.unsqueeze(0)?;
+    println!("Input it: {:?}", it.shape());
+
+    let out = generate_text_simple(gpt_model, it, 6, config.context_length)?;
+    println!("Output: {:?}", out.to_vec2::<u32>()?);
+    let decoded_text = tokenizer
+        .decode(&out.squeeze(0)?.to_vec1()?, false)
+        .unwrap();
+    println!("Output decoded text: {:?}", decoded_text);
     Ok(())
 }

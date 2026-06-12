@@ -265,6 +265,7 @@ dependencies = [
  "candle-core",
  "candle-nn",
  "chap3-coding-attention-mechanism",
+ "tokenizers 0.22.2",
 ]
 
 [[package]]
@@ -2188,6 +2189,8 @@ dependencies = [
  "derive_builder",
  "esaxx-rs",
  "getrandom 0.3.4",
+ "hf-hub",
+ "indicatif 0.18.4",
  "itertools 0.14.0",
  "log",
  "macro_rules_attribute",
