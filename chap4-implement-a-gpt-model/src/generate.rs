@@ -1,6 +1,7 @@
 use crate::gpt_model::GptModel;
-use candle_core::{D, Result, Tensor};
+use candle_core::{D, Device, Result, Tensor};
 use candle_nn::ops::softmax;
+use tokenizers::Tokenizer;
 
 pub fn generate_text_simple(
     model: GptModel,
@@ -27,4 +28,20 @@ pub fn generate_text_simple(
         idx = Tensor::cat(&[&idx, &idx_next], 1)?;
     }
     Ok(idx)
+}
+
+pub fn text_to_token_ids(
+    input: &str,
+    device: &Device,
+) -> std::result::Result<Tensor, Box<dyn std::error::Error + Send + Sync>> {
+    let tokenizer = Tokenizer::from_pretrained("gpt2", None)?;
+    let encoded = tokenizer.encode(input, false)?;
+    Ok(Tensor::new(encoded.get_ids(), device)?.unsqueeze(0)?)
+}
+
+pub fn token_ids_to_text(
+    out: Tensor,
+) -> std::result::Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    let tokenizer = Tokenizer::from_pretrained("gpt2", None)?;
+    tokenizer.decode(&out.squeeze(0)?.to_vec1()?, false)
 }

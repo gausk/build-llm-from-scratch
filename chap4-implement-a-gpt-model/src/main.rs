@@ -1,15 +1,14 @@
 use crate::config::GPTConfig;
 use crate::feedforward::FeedForward;
 use crate::gelu::Gelu;
-use crate::generate::generate_text_simple;
+use crate::generate::{generate_text_simple, text_to_token_ids, token_ids_to_text};
 use crate::gpt_model::GptModel;
 use crate::normalization::LayerNorm;
 use crate::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
 use crate::transformer::TransformerBlock;
-use candle_core::{D, DType, Device, Result, Tensor};
+use candle_core::{D, DType, Device, Tensor};
 use candle_nn::{VarBuilder, VarMap};
 use std::time::Instant;
-use tokenizers::Tokenizer;
 
 pub mod config;
 pub mod feedforward;
@@ -20,7 +19,7 @@ pub mod normalization;
 pub mod shortcut;
 pub mod transformer;
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let device = Device::Cpu;
     let input = Tensor::new(
         &[
@@ -99,19 +98,14 @@ fn main() -> Result<()> {
     println!("Total size of parameters: {:.4} MB\n", total_size_mb);
     println!("Total time taken to test GptModel: {:?}", current.elapsed());
 
-    let tokenizer = Tokenizer::from_pretrained("gpt2", None).unwrap();
     let input = "Hello, I am";
-    let encoded = tokenizer.encode(input, false).unwrap();
-    println!("Input encoded: {:?}", encoded.get_ids());
-
-    let it = Tensor::new(encoded.get_ids(), &device)?.unsqueeze(0)?;
-    println!("Input it: {:?}", it.shape());
+    let time = Instant::now();
+    let it = text_to_token_ids(input, &device)?;
 
     let out = generate_text_simple(gpt_model, it, 6, config.context_length)?;
     println!("Output: {:?}", out.to_vec2::<u32>()?);
-    let decoded_text = tokenizer
-        .decode(&out.squeeze(0)?.to_vec1()?, false)
-        .unwrap();
+    let decoded_text = token_ids_to_text(out)?;
     println!("Output decoded text: {:?}", decoded_text);
+    println!("Total time taken for text generation: {:?}", time.elapsed());
     Ok(())
 }
