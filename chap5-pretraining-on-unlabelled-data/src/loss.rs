@@ -10,7 +10,7 @@ pub fn calc_loss_batch(
     model: &GptModel,
 ) -> Result<Tensor, Box<dyn Error + Send + Sync>> {
     let logits = model.forward(input_batch)?;
-    let logits = logits.flatten_to(2)?;
+    let logits = logits.flatten(0, 1)?;
     let target = target_batch.flatten_all()?;
     let tl_loss = cross_entropy(&logits, &target)?;
     Ok(tl_loss)
