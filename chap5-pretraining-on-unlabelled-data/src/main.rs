@@ -1,12 +1,10 @@
-use crate::data::create_training_and_validation_data;
-use crate::loss::calc_loss_loader;
 use candle_core::Device;
 use candle_nn::VarMap;
 use chap4_implement_a_gpt_model::config::GPTConfig;
 use chap4_implement_a_gpt_model::gpt_model::GptModel;
-
-pub mod data;
-mod loss;
+use chap5_pretraining_on_unlabelled_data::data::create_training_and_validation_data;
+use chap5_pretraining_on_unlabelled_data::loss::calc_loss_loader;
+use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -27,10 +25,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let var_map = VarMap::new();
     let config = GPTConfig::gpt2();
     let model = GptModel::init(config, device, var_map)?;
+    let current = Instant::now();
     let train_loss = calc_loss_loader(train, &model)?;
     println!("Training Loss: {train_loss}");
     let validation_loss = calc_loss_loader(validation, &model)?;
     println!("Validation Loss: {validation_loss}");
-
+    println!("Time Taken: {:?}", current.elapsed());
     Ok(())
 }
