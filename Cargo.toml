@@ -4,12 +4,16 @@ members = [
     "chap2-working-with-text-data",
     "chap3-coding-attention-mechanism",
     "chap4-implement-a-gpt-model",
+    "chap5-pretraining-on-unlabelled-data",
 ]
 
 [workspace.dependencies]
 candle-core = { version = "0.10.2", features = ["metal"] }
 candle-nn = { version = "0.10.2" }
+chap2-working-with-text-data = { path = "chap2-working-with-text-data" }
 chap3-coding-attention-mechanism = { path = "chap3-coding-attention-mechanism" }
+chap4-implement-a-gpt-model = { path = "chap4-implement-a-gpt-model" }
 criterion = "0.8.2"
 tokenizers = { version = "0", features = ["http"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs"] }
+rand = { version = "=0.9.4" }

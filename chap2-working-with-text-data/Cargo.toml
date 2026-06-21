@@ -5,7 +5,9 @@ edition = "2024"
 
 [dependencies]
 tokenizers = { workspace = true }
+candle-core = { workspace = true }
 tokio = { workspace = true }
+rand = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

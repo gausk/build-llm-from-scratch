@@ -1,23 +1,16 @@
-use crate::config::GPTConfig;
-use crate::feedforward::FeedForward;
-use crate::gelu::Gelu;
-use crate::generate::{generate_text_simple, text_to_token_ids, token_ids_to_text};
-use crate::gpt_model::GptModel;
-use crate::normalization::LayerNorm;
-use crate::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
-use crate::transformer::TransformerBlock;
 use candle_core::{D, DType, Device, Tensor};
 use candle_nn::{VarBuilder, VarMap};
+use chap4_implement_a_gpt_model::config::GPTConfig;
+use chap4_implement_a_gpt_model::feedforward::FeedForward;
+use chap4_implement_a_gpt_model::gelu::Gelu;
+use chap4_implement_a_gpt_model::generate::{
+    generate_text_simple, text_to_token_ids, token_ids_to_text,
+};
+use chap4_implement_a_gpt_model::gpt_model::GptModel;
+use chap4_implement_a_gpt_model::normalization::LayerNorm;
+use chap4_implement_a_gpt_model::shortcut::{ExampleDeepNeuralNetwork, print_gradients};
+use chap4_implement_a_gpt_model::transformer::TransformerBlock;
 use std::time::Instant;
-
-pub mod config;
-pub mod feedforward;
-pub mod gelu;
-pub mod generate;
-pub mod gpt_model;
-pub mod normalization;
-pub mod shortcut;
-pub mod transformer;
 
 fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let device = Device::Cpu;

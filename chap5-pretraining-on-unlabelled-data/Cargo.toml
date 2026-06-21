@@ -1,0 +1,12 @@
+[package]
+name = "chap5-pretraining-on-unlabelled-data"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+candle-core = { workspace = true }
+chap2-working-with-text-data = { workspace = true }
+candle-nn = { workspace = true }
+chap4-implement-a-gpt-model = { workspace = true }
+tokenizers = { workspace = true }
+tokio = { workspace = true }

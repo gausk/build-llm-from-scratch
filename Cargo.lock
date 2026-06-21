@@ -245,7 +245,9 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 name = "chap2-working-with-text-data"
 version = "0.1.0"
 dependencies = [
+ "candle-core",
  "criterion",
+ "rand",
  "tokenizers 0.23.1",
  "tokio",
 ]
@@ -265,7 +267,19 @@ dependencies = [
  "candle-core",
  "candle-nn",
  "chap3-coding-attention-mechanism",
- "tokenizers 0.22.2",
+ "tokenizers 0.23.1",
+]
+
+[[package]]
+name = "chap5-pretraining-on-unlabelled-data"
+version = "0.1.0"
+dependencies = [
+ "candle-core",
+ "candle-nn",
+ "chap2-working-with-text-data",
+ "chap4-implement-a-gpt-model",
+ "tokenizers 0.23.1",
+ "tokio",
 ]
 
 [[package]]
@@ -2189,8 +2203,6 @@ dependencies = [
  "derive_builder",
  "esaxx-rs",
  "getrandom 0.3.4",
- "hf-hub",
- "indicatif 0.18.4",
  "itertools 0.14.0",
  "log",
  "macro_rules_attribute",
