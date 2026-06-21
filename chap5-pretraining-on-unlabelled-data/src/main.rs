@@ -27,8 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let var_map = VarMap::new();
     let config = GPTConfig::gpt2();
     let model = GptModel::init(config, device, var_map)?;
-    // let train_loss = calc_loss_loader(train, &model)?;
-    // println!("Training Loss: {train_loss}");
+    let train_loss = calc_loss_loader(train, &model)?;
+    println!("Training Loss: {train_loss}");
     let validation_loss = calc_loss_loader(validation, &model)?;
     println!("Validation Loss: {validation_loss}");
 
