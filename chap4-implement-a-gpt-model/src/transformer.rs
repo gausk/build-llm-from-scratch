@@ -11,6 +11,7 @@ pub struct TransformerBlock {
     norm1: LayerNorm,
     norm2: LayerNorm,
     dropout: Dropout,
+    training: bool,
 }
 
 impl TransformerBlock {
@@ -34,6 +35,7 @@ impl TransformerBlock {
             norm1,
             norm2,
             dropout,
+            training: true,
         })
     }
 
@@ -41,13 +43,13 @@ impl TransformerBlock {
         let mut shortcut = x.clone();
         let mut x = self.norm1.normalize(&x)?;
         x = self.mhead.forward_batch(&x)?;
-        x = self.dropout.forward(&x, true)?;
+        x = self.dropout.forward(&x, self.training)?;
         x = (x + shortcut)?;
 
         shortcut = x.clone();
         x = self.norm2.normalize(&x)?;
         x = self.feed_forward.forward(x)?;
-        x = self.dropout.forward(&x, true)?;
+        x = self.dropout.forward(&x, self.training)?;
         x = (x + shortcut)?;
 
         Ok(x)
@@ -58,5 +60,15 @@ impl TransformerBlock {
             + self.feed_forward.parameters()
             + self.norm1.parameters()
             + self.norm2.parameters()
+    }
+
+    pub fn train(&mut self) {
+        self.training = true;
+        self.mhead.train();
+    }
+
+    pub fn eval(&mut self) {
+        self.training = false;
+        self.mhead.eval();
     }
 }

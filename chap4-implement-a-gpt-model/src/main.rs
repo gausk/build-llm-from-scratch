@@ -95,7 +95,7 @@ fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let time = Instant::now();
     let it = text_to_token_ids(input, &device)?;
 
-    let out = generate_text_simple(gpt_model, it, 6, config.context_length)?;
+    let out = generate_text_simple(&gpt_model, it, 6, config.context_length)?;
     println!("Output: {:?}", out.to_vec2::<u32>()?);
     let decoded_text = token_ids_to_text(out)?;
     println!("Output decoded text: {:?}", decoded_text);

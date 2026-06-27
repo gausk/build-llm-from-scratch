@@ -68,36 +68,52 @@ impl DataLoader {
             current: 0,
         })
     }
+
+    pub fn reset(&mut self) {
+        self.current = 0;
+    }
+
+    pub fn iter(&self) -> DataLoaderIter<'_> {
+        DataLoaderIter {
+            loader: self,
+            current: 0,
+        }
+    }
 }
 
-impl Iterator for DataLoader {
+pub struct DataLoaderIter<'a> {
+    loader: &'a DataLoader,
+    current: usize,
+}
+
+impl Iterator for DataLoaderIter<'_> {
     type Item = Result<(Tensor, Tensor)>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current >= self.indices.len() {
+        if self.current >= self.loader.indices.len() {
             return None;
         }
 
-        let end = (self.current + self.batch_size).min(self.indices.len());
+        let end = (self.current + self.loader.batch_size).min(self.loader.indices.len());
 
         let actual_batch = end - self.current;
 
-        if self.drop_last && actual_batch < self.batch_size {
+        if self.loader.drop_last && actual_batch < self.loader.batch_size {
             return None;
         }
 
-        let batch_indices = &self.indices[self.current..end];
+        let batch_indices = &self.loader.indices[self.current..end];
 
         self.current = end;
 
         let inputs = batch_indices
             .iter()
-            .map(|&idx| self.inputs.get(idx))
+            .map(|&idx| self.loader.inputs.get(idx))
             .collect::<Result<Vec<_>>>();
 
         let targets = batch_indices
             .iter()
-            .map(|&idx| self.targets.get(idx))
+            .map(|&idx| self.loader.targets.get(idx))
             .collect::<Result<Vec<_>>>();
 
         Some(inputs.and_then(|inputs| {

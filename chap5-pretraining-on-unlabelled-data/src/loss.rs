@@ -17,13 +17,13 @@ pub fn calc_loss_batch(
 }
 
 pub fn calc_loss_loader(
-    data_loader: DataLoader,
+    data_loader: &DataLoader,
     model: &GptModel,
 ) -> Result<f32, Box<dyn Error + Send + Sync>> {
     let mut total_loss = 0f32;
     let mut num_batches = 0usize;
 
-    for batch in data_loader {
+    for batch in data_loader.iter() {
         let (inputs, targets) = batch?;
 
         let loss = calc_loss_batch(inputs, targets, model)?;

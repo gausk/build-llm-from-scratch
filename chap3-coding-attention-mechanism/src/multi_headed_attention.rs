@@ -14,6 +14,7 @@ pub struct MultiHeadAttention {
 
     dropout: Dropout,
     device: Device,
+    training: bool,
 }
 
 impl MultiHeadAttention {
@@ -42,6 +43,7 @@ impl MultiHeadAttention {
             num_heads,
             dropout: Dropout::new(dropout),
             device,
+            training: true,
         })
     }
 
@@ -76,7 +78,7 @@ impl MultiHeadAttention {
 
         let attention_scores = attention_scores.broadcast_add(&mask)?;
         let attn_weights = softmax(&attention_scores, D::Minus1)?;
-        let attn_weights = self.dropout.forward(&attn_weights, true)?;
+        let attn_weights = self.dropout.forward(&attn_weights, self.training)?;
 
         let context = attn_weights.matmul(&values)?;
 
@@ -95,5 +97,13 @@ impl MultiHeadAttention {
                 linear.weight().elem_count() + linear.bias().map_or(0, |b| b.elem_count())
             })
             .sum()
+    }
+
+    pub fn eval(&mut self) {
+        self.training = false;
+    }
+
+    pub fn train(&mut self) {
+        self.training = true;
     }
 }

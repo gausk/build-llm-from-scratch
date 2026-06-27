@@ -4,7 +4,7 @@ use candle_nn::ops::softmax;
 use tokenizers::Tokenizer;
 
 pub fn generate_text_simple(
-    model: GptModel,
+    model: &GptModel,
     mut idx: Tensor,
     max_new_tokens: usize,
     context_size: usize,

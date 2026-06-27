@@ -11,7 +11,8 @@ pub struct GptModel {
     transformer_blocks: Vec<TransformerBlock>,
     final_norm: LayerNorm,
     out_head: Linear,
-    _var_map: VarMap,
+    var_map: VarMap,
+    training: bool,
 }
 
 impl GptModel {
@@ -37,7 +38,8 @@ impl GptModel {
             transformer_blocks,
             final_norm,
             out_head,
-            _var_map: var_map,
+            var_map,
+            training: true,
         })
     }
 
@@ -50,7 +52,7 @@ impl GptModel {
         )?)?;
 
         let mut x = tok_embeds.broadcast_add(&pos_embeds)?;
-        x = self.drop_emb.forward(&x, true)?;
+        x = self.drop_emb.forward(&x, self.training)?;
         for blocks in &self.transformer_blocks {
             x = blocks.forward(x)?;
         }
@@ -84,5 +86,23 @@ impl GptModel {
         let total_wty = total - out_weight - out_bias;
         println!("\nTotal parameters considering weight tying  : {total_wty}\n");
         total
+    }
+
+    pub fn eval(&mut self) {
+        self.training = false;
+        self.transformer_blocks.iter_mut().for_each(|b| b.eval());
+    }
+
+    pub fn train(&mut self) {
+        self.training = true;
+        self.transformer_blocks.iter_mut().for_each(|b| b.train());
+    }
+
+    pub fn context_size(&self) -> usize {
+        self.pos_emb.embeddings().dims1().unwrap()
+    }
+
+    pub fn var_map(&self) -> &VarMap {
+        &self.var_map
     }
 }
