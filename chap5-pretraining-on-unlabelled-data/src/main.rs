@@ -35,17 +35,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("Time Taken: {:?}", current.elapsed());
 
     let now = Instant::now();
-    let mut paramsw = ParamsAdamW::default();
-    paramsw.lr = 0.0004;
-    paramsw.weight_decay = 0.1;
+    let paramsw = ParamsAdamW {
+        lr: 0.0004,
+        weight_decay: 0.1,
+        ..Default::default()
+    };
     let optimizer = AdamW::new(model.var_map().all_vars(), paramsw)?;
     train_model_simple(
         &mut model,
         &train,
         &validation,
         optimizer,
-        10,
         5,
+        2,
         "Every effort moves you",
         &device,
     )?;

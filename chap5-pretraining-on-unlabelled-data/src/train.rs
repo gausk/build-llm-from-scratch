@@ -12,6 +12,8 @@ pub struct TrainOutput {
     pub train_losses: Vec<f32>,
     pub valid_losses: Vec<f32>,
 }
+
+#[allow(clippy::too_many_arguments)]
 pub fn train_model_simple(
     model: &mut GptModel,
     train_loader: &DataLoader,
@@ -49,7 +51,8 @@ pub fn train_model_simple(
                 );
             }
         }
-        generate_and_print_simple(model, start_context, device)?;
+        let output = generate_and_print_simple(model, start_context, device)?;
+        println!("epoch: {epoch} output: {output}");
     }
     Ok(TrainOutput {
         tokens_seen,
@@ -78,12 +81,11 @@ fn generate_and_print_simple(
     model: &mut GptModel,
     start_context: &str,
     device: &Device,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     model.eval();
     let encoded = text_to_token_ids(start_context, device)?;
     let output = generate_text_simple(model, encoded, 50, model.context_size())?;
     let decoded = token_ids_to_text(output)?;
-    println!("{}", decoded);
     model.train();
-    Ok(())
+    Ok(decoded)
 }

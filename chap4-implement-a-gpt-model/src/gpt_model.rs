@@ -99,7 +99,7 @@ impl GptModel {
     }
 
     pub fn context_size(&self) -> usize {
-        self.pos_emb.embeddings().dims1().unwrap()
+        self.pos_emb.embeddings().dim(0).unwrap()
     }
 
     pub fn var_map(&self) -> &VarMap {
