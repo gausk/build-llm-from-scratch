@@ -27,12 +27,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let var_map = VarMap::new();
     let config = GPTConfig::gpt2();
     let mut model = GptModel::init(config, device.clone(), var_map)?;
-    let current = Instant::now();
-    let train_loss = calc_loss_loader(&train, &model)?;
-    println!("Training Loss: {train_loss}");
-    let validation_loss = calc_loss_loader(&validation, &model)?;
-    println!("Validation Loss: {validation_loss}");
-    println!("Time Taken: {:?}", current.elapsed());
+    // let current = Instant::now();
+    // let train_loss = calc_loss_loader(&train, &model)?;
+    // println!("Training Loss: {train_loss}");
+    // let validation_loss = calc_loss_loader(&validation, &model)?;
+    // println!("Validation Loss: {validation_loss}");
+    // println!("Time Taken: {:?}", current.elapsed());
 
     let now = Instant::now();
     let paramsw = ParamsAdamW {
@@ -47,7 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         &validation,
         optimizer,
         5,
-        2,
+        10,
         "Every effort moves you",
         &device,
     )?;

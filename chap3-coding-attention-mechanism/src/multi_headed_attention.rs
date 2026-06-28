@@ -65,13 +65,13 @@ impl MultiHeadAttention {
         let keys = keys.transpose(1, 2)?.contiguous()?;
         let values = values.transpose(1, 2)?.contiguous()?;
 
-        println!("Queries after transpose: {:?}", queries.shape());
+        //println!("Queries after transpose: {:?}", queries.shape());
 
         let scale = (self.head_dims as f64).sqrt();
         let attention_scores = queries
             .matmul(&keys.transpose(2, 3)?)?
             .affine(1.0 / scale, 0.0)?;
-        println!("Attention scores shape: {:?}", attention_scores.shape());
+       //println!("Attention scores shape: {:?}", attention_scores.shape());
 
         let tril = Tensor::tril2(seq_len, DType::F32, &self.device)?;
         let mask = tril.neg()?.affine(1.0, 1.0)?.affine(-1e9, 0.0)?;
