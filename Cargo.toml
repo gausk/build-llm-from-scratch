@@ -8,7 +8,7 @@ members = [
 ]
 
 [workspace.dependencies]
-candle-core = { version = "0.10.2", features = ["metal"] }
+candle-core = { version = "0.10.2" }
 candle-nn = { version = "0.10.2" }
 chap2-working-with-text-data = { path = "chap2-working-with-text-data" }
 chap3-coding-attention-mechanism = { path = "chap3-coding-attention-mechanism" }
